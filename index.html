@@ -6,6 +6,7 @@
 <title>Syed Ubaidullah — Video Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root{
     --bg:#0a0b0d;
@@ -47,7 +48,11 @@
     color:var(--muted); letter-spacing:1px;
   }
 
-  section{ padding:120px 8vw; position:relative; }
+  #webgl-bg{
+    position:fixed; inset:0; width:100%; height:100%; z-index:0;
+    pointer-events:none;
+  }
+  section{ padding:120px 8vw; position:relative; z-index:1; }
   .eyebrow{
     font-family:'JetBrains Mono',monospace;
     color:var(--orange); letter-spacing:3px; font-size:12px;
@@ -103,9 +108,23 @@
   h1#name{
     font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase;
     font-size:clamp(56px,11vw,140px); line-height:0.92; letter-spacing:1px;
-    background:linear-gradient(180deg, var(--cream) 55%, rgba(245,241,232,0.55));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    animation: rise 1s cubic-bezier(.2,.9,.2,1) .35s both;
+    color: var(--cream);
+    text-shadow:
+      1px 1px 0 rgba(56,189,248,0.5),
+      2px 2px 0 rgba(52,211,153,0.45),
+      3px 3px 0 rgba(52,211,153,0.4),
+      4px 4px 0 rgba(52,211,153,0.35),
+      5px 5px 0 rgba(52,211,153,0.3),
+      6px 6px 0 rgba(52,211,153,0.25),
+      7px 7px 0 rgba(52,211,153,0.2),
+      8px 8px 14px rgba(0,0,0,0.5),
+      8px 8px 30px rgba(56,189,248,0.35);
+    transform-style:preserve-3d;
+    animation: rise 1s cubic-bezier(.2,.9,.2,1) .35s both, nametilt 8s ease-in-out infinite 1.3s;
+  }
+  @keyframes nametilt{
+    0%,100%{ transform: rotateX(0deg) rotateY(0deg); }
+    50%{ transform: rotateX(4deg) rotateY(-4deg); }
   }
   @keyframes rise{ from{ opacity:0; transform:translateY(40px) rotateX(20deg);} to{opacity:1; transform:translateY(0) rotateX(0);} }
   #role{
@@ -139,7 +158,7 @@
   /* ================= PROFILE ================= */
   #profile{ display:grid; grid-template-columns:0.9fr 1.3fr; gap:60px; align-items:start; border-top:1px solid var(--line); }
   .profile-card{
-    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:30px;
+    background:rgba(20,22,27,0.82); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:14px; padding:30px;
     transform-style:preserve-3d; transition:transform .4s ease, box-shadow .4s ease;
   }
   .profile-card:hover{ box-shadow:0 20px 50px rgba(0,0,0,0.4); }
@@ -157,7 +176,7 @@
   .track-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; font-family:'JetBrains Mono',monospace; }
   .track-name{ font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1.5px; color:var(--cream); }
   .track-pct{ color:var(--orange); font-size:13px; }
-  .track-lane{ height:46px; background:var(--panel); border:1px solid var(--line); border-radius:8px; position:relative; overflow:hidden; }
+  .track-lane{ height:46px; background:rgba(20,22,27,0.85); backdrop-filter:blur(4px); border:1px solid var(--line); border-radius:8px; position:relative; overflow:hidden; }
   .track-fill{
     position:absolute; inset:0; width:0%; border-radius:8px;
     background:repeating-linear-gradient(90deg, var(--orange) 0 6px, transparent 6px 10px);
@@ -172,7 +191,7 @@
   /* ================= EXPERIENCE ================= */
   #experience{ border-top:1px solid var(--line); }
   .slate{
-    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:34px;
+    background:rgba(20,22,27,0.82); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:14px; padding:34px;
     position:relative; transform-style:preserve-3d; transition:transform .5s ease;
     overflow:hidden;
   }
@@ -191,7 +210,8 @@
   /* ================= EDUCATION ================= */
   #education{ border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr; gap:40px; }
   .edu-card{
-    background:linear-gradient(160deg, var(--panel), var(--panel-2));
+    background:linear-gradient(160deg, rgba(20,22,27,0.85), rgba(27,30,37,0.85));
+    backdrop-filter:blur(6px);
     border:1px solid var(--line); border-radius:14px; padding:30px;
     transform-style:preserve-3d; transition:transform .4s ease;
   }
@@ -203,14 +223,15 @@
   /* ================= CONTACT (in footer) ================= */
   footer{
     border-top:1px solid var(--line); text-align:center;
-    padding:120px 8vw 40px; background:linear-gradient(180deg, transparent, rgba(56,189,248,0.05));
+    padding:120px 8vw 40px; background:linear-gradient(180deg, transparent, rgba(56,189,248,0.08));
+    backdrop-filter:blur(4px);
   }
   footer .eyebrow{ justify-content:center; }
   footer .section-title{ margin-bottom:20px; }
   footer p.sub{ color:var(--muted); max-width:480px; margin:0 auto 40px; font-size:15px; }
   .contact-grid{ display:flex; justify-content:center; gap:18px; flex-wrap:wrap; }
   .contact-btn{
-    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px 30px;
+    background:rgba(20,22,27,0.85); backdrop-filter:blur(4px); border:1px solid var(--line); border-radius:12px; padding:22px 30px;
     display:flex; flex-direction:column; align-items:center; gap:8px; min-width:220px;
     text-decoration:none; color:var(--cream); transition:transform .3s ease, border-color .3s ease;
   }
@@ -234,6 +255,7 @@
 </head>
 <body>
 
+<canvas id="webgl-bg"></canvas>
 <div id="timeline-bar"><div id="timeline-fill"></div></div>
 <div id="timecode">00:00:00:00</div>
 
@@ -398,7 +420,7 @@
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left)/r.width - 0.5;
       const y = (e.clientY - r.top)/r.height - 0.5;
-      card.style.transform = `rotateY(${x*10}deg) rotateX(${-y*10}deg) translateZ(10px)`;
+      card.style.transform = `rotateY(${x*22}deg) rotateX(${-y*22}deg) translateZ(30px)`;
     });
     card.addEventListener('mouseleave', ()=>{ card.style.transform = 'rotateY(0) rotateX(0)'; });
   });
@@ -411,6 +433,126 @@
       r.style.transform = `translate(${x*20*(i+1)}px, ${y*20*(i+1)}px)`;
     });
   });
+
+  /* ===================== REAL 3D WEBGL SCENE ===================== */
+  (function(){
+    const canvas = document.getElementById('webgl-bg');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 200);
+    camera.position.set(0, 0, 32);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x224444, 1.4));
+    const light1 = new THREE.PointLight(0x38bdf8, 3, 80);
+    light1.position.set(20, 15, 20);
+    scene.add(light1);
+    const light2 = new THREE.PointLight(0x34d399, 3, 80);
+    light2.position.set(-20, -10, 15);
+    scene.add(light2);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Film-reel style tori
+    const reelMat1 = new THREE.MeshStandardMaterial({ color:0x34d399, metalness:0.4, roughness:0.35, emissive:0x0b3d2c, emissiveIntensity:0.6 });
+    const reelMat2 = new THREE.MeshStandardMaterial({ color:0x38bdf8, metalness:0.4, roughness:0.35, emissive:0x0b2a3d, emissiveIntensity:0.6 });
+
+    const reels = [];
+    const reelDefs = [
+      {r:6, tube:0.35, x:-16, y:10, z:-10, mat:reelMat1},
+      {r:4, tube:0.3,  x:18,  y:6,  z:-16, mat:reelMat2},
+      {r:3, tube:0.25, x:-12, y:-12,z:-6,  mat:reelMat2},
+      {r:5, tube:0.3,  x:14,  y:-14,z:-12, mat:reelMat1},
+      {r:2.4,tube:0.22,x:0,   y:16, z:-20, mat:reelMat1},
+    ];
+    reelDefs.forEach(d=>{
+      const geo = new THREE.TorusGeometry(d.r, d.tube, 16, 60);
+      const mesh = new THREE.Mesh(geo, d.mat);
+      mesh.position.set(d.x, d.y, d.z);
+      mesh.rotation.x = Math.random()*Math.PI;
+      mesh.userData.speed = 0.15 + Math.random()*0.25;
+      group.add(mesh);
+      reels.push(mesh);
+    });
+
+    // Wireframe icosahedrons (floating "frames")
+    const wireGeo = new THREE.IcosahedronGeometry(1.6, 0);
+    const wireMat1 = new THREE.MeshBasicMaterial({ color:0x38bdf8, wireframe:true, transparent:true, opacity:0.55 });
+    const wireMat2 = new THREE.MeshBasicMaterial({ color:0x34d399, wireframe:true, transparent:true, opacity:0.55 });
+    const icos = [];
+    for(let i=0;i<10;i++){
+      const mesh = new THREE.Mesh(wireGeo, i%2? wireMat1 : wireMat2);
+      mesh.position.set((Math.random()-0.5)*46, (Math.random()-0.5)*36, -6-Math.random()*22);
+      const s = 0.5 + Math.random()*1.1;
+      mesh.scale.set(s,s,s);
+      mesh.userData.speed = 0.1 + Math.random()*0.3;
+      group.add(mesh);
+      icos.push(mesh);
+    }
+
+    // Particle field
+    const particleCount = 260;
+    const positions = new Float32Array(particleCount*3);
+    for(let i=0;i<particleCount;i++){
+      positions[i*3]   = (Math.random()-0.5)*70;
+      positions[i*3+1] = (Math.random()-0.5)*60;
+      positions[i*3+2] = -Math.random()*40;
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const pMat = new THREE.PointsMaterial({ color:0x9be8d8, size:0.18, transparent:true, opacity:0.7 });
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    let mouseX = 0, mouseY = 0, scrollFrac = 0;
+    document.addEventListener('mousemove', (e)=>{
+      mouseX = (e.clientX / window.innerWidth - 0.5);
+      mouseY = (e.clientY / window.innerHeight - 0.5);
+    });
+    window.addEventListener('scroll', ()=>{
+      const h = document.documentElement;
+      scrollFrac = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    });
+    window.addEventListener('resize', ()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate(){
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      reels.forEach((m,i)=>{
+        m.rotation.x += 0.003 * m.userData.speed * 10 * 0.016;
+        m.rotation.y += 0.004 * m.userData.speed * 10 * 0.016;
+        m.position.y += Math.sin(t*0.4 + i)*0.003;
+      });
+      icos.forEach((m,i)=>{
+        m.rotation.x += 0.006 * m.userData.speed;
+        m.rotation.y += 0.008 * m.userData.speed;
+      });
+      particles.rotation.y = t*0.02;
+
+      // Camera parallax: mouse + scroll driven depth motion
+      const targetX = mouseX * 6;
+      const targetY = -mouseY * 4;
+      camera.position.x += (targetX - camera.position.x) * 0.04;
+      camera.position.y += (targetY - camera.position.y) * 0.04;
+      group.rotation.y = scrollFrac * 1.2;
+      group.rotation.x = scrollFrac * 0.4;
+      camera.position.z = 32 - scrollFrac * 10;
+      camera.lookAt(0,0,0);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
 </script>
 </body>
 </html>
